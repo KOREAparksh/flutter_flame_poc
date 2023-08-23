@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_flame_poc/arc_load_paint.dart';
 import 'package:flutter_flame_poc/falling_poop_game.dart';
 import 'package:flutter_flame_poc/flutter_achievement.dart';
 import 'package:flutter_flame_poc/load_achievement.dart';
@@ -65,6 +66,16 @@ class Home extends StatelessWidget {
                     ));
               },
               child: const Text("업적 start"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const ArcLoadTest(),
+                    ));
+              },
+              child: const Text("곡선 load start"),
             ),
             ElevatedButton(
               onPressed: () {
