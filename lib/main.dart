@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_flame_poc/falling_poop_game.dart';
+import 'package:flutter_flame_poc/load_achievement.dart';
 
 void main() {
   runApp(const MyApp());
@@ -26,6 +27,7 @@ class Home extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(title: const Text("자 드가자~")),
       body: SizedBox(
         width: double.infinity,
         child: Column(
@@ -41,6 +43,16 @@ class Home extends StatelessWidget {
                     ));
               },
               child: const Text("떨어지는 똥 먹기 game start"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const LoadAchievement(),
+                    ));
+              },
+              child: const Text("업적 맵 start"),
             ),
           ],
         ),

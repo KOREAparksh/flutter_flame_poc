@@ -45,7 +45,7 @@ class RacingGame extends FlameGame with TapCallbacks, HasCollisionDetection {
     nextSpawnSeconds -= dt;
     if (nextSpawnSeconds < 0) {
       add(Star(Vector2(size.x * (Random().nextInt(10) > 5 ? 0.75 : 0.25), 0)));
-      nextSpawnSeconds = 0.3 + Random().nextDouble() * 2;
+      nextSpawnSeconds = 0.001 + Random().nextDouble();
     }
   }
 }
@@ -96,9 +96,11 @@ class Player extends RectangleComponent with CollisionCallbacks {
 
 class Star extends RectangleComponent with HasGameRef, CollisionCallbacks {
   static const starSize = 64.0;
+  final speed;
 
   Star(position)
-      : super(
+      : speed = Random().nextInt(10) + 3,
+        super(
           position: position,
           size: Vector2.all(starSize),
           anchor: Anchor.bottomCenter,
@@ -114,7 +116,7 @@ class Star extends RectangleComponent with HasGameRef, CollisionCallbacks {
   @override
   void update(double dt) {
     super.update(dt);
-    position.y = position.y + 5;
+    position.y = position.y + speed;
     if (position.y - starSize > gameRef.size.y) {
       removeFromParent();
     }
