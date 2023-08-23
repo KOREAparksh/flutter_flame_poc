@@ -73,15 +73,15 @@ class World extends FlameGame with HasGameRef, DragCallbacks {
   void update(double dt) {
     super.update(dt);
 
-    if (isFirst && centerComp.position.y >= list.last.y) {
-      if (isFirst == true) {
-        isFirst = false;
-      }
-      return;
-    }
-    if (isFirst) {
-      centerComp.position.y = centerComp.position.y + 5;
-    }
+    // if (isFirst && centerComp.position.y >= list.last.y) {
+    //   if (isFirst == true) {
+    //     isFirst = false;
+    //   }
+    //   return;
+    // }
+    // if (isFirst) {
+    //   centerComp.position.y = centerComp.position.y + 5;
+    // }
   }
 
   void onDragUpdate(DragUpdateEvent event) {
