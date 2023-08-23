@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_flame_poc/falling_poop_game.dart';
 import 'package:flutter_flame_poc/load_achievement.dart';
+import 'package:flutter_flame_poc/test.dart';
 
 void main() {
   runApp(const MyApp());
@@ -49,10 +50,10 @@ class Home extends StatelessWidget {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const LoadAchievement(),
+                      builder: (_) => const Test(),
                     ));
               },
-              child: const Text("업적 맵 start"),
+              child: const Text("component test start"),
             ),
           ],
         ),
