@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_flame_poc/game_screen.dart';
+import 'package:flutter_flame_poc/falling_poop_game.dart';
 
 void main() {
   runApp(const MyApp());
@@ -37,7 +37,7 @@ class Home extends StatelessWidget {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const GameScreen(),
+                      builder: (_) => const FallingPoopGameScreen(),
                     ));
               },
               child: const Text("떨어지는 똥 먹기 game start"),
