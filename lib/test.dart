@@ -17,7 +17,7 @@ class Test extends StatelessWidget {
       body: Column(
         children: [
           Expanded(
-            child: GameWidget(game: Map()),
+            child: GameWidget(game: World()),
           ),
         ],
       ),
@@ -25,13 +25,13 @@ class Test extends StatelessWidget {
   }
 }
 
-class Map extends FlameGame with TapDetector, DoubleTapDetector {
+class World extends FlameGame with TapDetector, DoubleTapDetector {
   late final GameOverButton gameOverButton;
   late final SpriteComponent player;
   late NineTileBoxComponent nineTileBoxComponent;
   late NineTileBoxComponent nineTileBoxComponent2;
 
-  Map();
+  World();
 
   @override
   FutureOr<void> onLoad() async {

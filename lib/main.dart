@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_flame_poc/falling_poop_game.dart';
+import 'package:flutter_flame_poc/flutter_achievement.dart';
 import 'package:flutter_flame_poc/load_achievement.dart';
 import 'package:flutter_flame_poc/test.dart';
 
@@ -54,6 +55,26 @@ class Home extends StatelessWidget {
                     ));
               },
               child: const Text("component test start"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const LoadAchievement(),
+                    ));
+              },
+              child: const Text("업적 start"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const FlutterAchievement(),
+                    ));
+              },
+              child: const Text("플러터로 만든 업적 start"),
             ),
           ],
         ),
