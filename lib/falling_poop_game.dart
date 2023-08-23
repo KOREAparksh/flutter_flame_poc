@@ -12,7 +12,9 @@ class FallingPoopGameScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GameWidget(game: RacingGame());
+    return GameWidget(
+      game: RacingGame(),
+    );
   }
 }
 
