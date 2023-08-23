@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:math';
 
+import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
@@ -14,8 +16,9 @@ class GameScreen extends StatelessWidget {
   }
 }
 
-class RacingGame extends FlameGame with TapCallbacks {
+class RacingGame extends FlameGame with TapCallbacks, HasCollisionDetection {
   late Player player;
+  double nextSpawnSeconds = 0;
 
   @override
   FutureOr<void> onLoad() async {
@@ -35,19 +38,63 @@ class RacingGame extends FlameGame with TapCallbacks {
       }
     }
   }
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+    nextSpawnSeconds -= dt;
+    if (nextSpawnSeconds < 0) {
+      add(Star(Vector2(size.x * (Random().nextInt(10) > 5 ? 0.75 : 0.25), 0)));
+      nextSpawnSeconds = 0.3 + Random().nextDouble() * 2;
+    }
+  }
 }
 
-class Player extends RectangleComponent {
+class Player extends RectangleComponent with CollisionCallbacks {
   static const playerSize = 96.0;
+  int totalCount = 0;
+  late TextComponent textComponent;
+
   Player({required position})
       : super(
           position: position,
           size: Vector2.all(playerSize),
           anchor: Anchor.bottomCenter,
         );
+
+  @override
+  Future<void> onLoad() async {
+    super.onLoad();
+    paint.color = Colors.blue;
+    add(RectangleHitbox());
+
+    textComponent = TextComponent(
+      text: '',
+      textRenderer: TextPaint(
+        style: const TextStyle(
+          fontSize: 40,
+        ),
+      ),
+      anchor: Anchor.center,
+      position: Vector2(playerSize / 2, playerSize / 2),
+    );
+    add(textComponent);
+  }
+
+  @override
+  void onCollisionStart(
+    Set<Vector2> intersectionPoints,
+    PositionComponent other,
+  ) {
+    if (other is Star) {
+      textComponent.text = '${++totalCount}';
+    } else {
+      super.onCollisionStart(intersectionPoints, other);
+    }
+  }
 }
 
-class Star extends RectangleComponent with HasGameRef {
+class Star extends RectangleComponent with HasGameRef, CollisionCallbacks {
   static const starSize = 64.0;
 
   Star(position)
@@ -61,14 +108,36 @@ class Star extends RectangleComponent with HasGameRef {
   Future<void> onLoad() async {
     super.onLoad();
     paint.color = Colors.yellow;
+    add(RectangleHitbox());
   }
 
   @override
   void update(double dt) {
     super.update(dt);
     position.y = position.y + 5;
-    if (position.y - size.y > gameRef.size.y) {
+    if (position.y - starSize > gameRef.size.y) {
       removeFromParent();
+    }
+  }
+
+  @override
+  bool onComponentTypeCheck(PositionComponent other) {
+    if (other is Star) {
+      return false;
+    } else {
+      return super.onComponentTypeCheck(other);
+    }
+  }
+
+  @override
+  void onCollisionStart(
+    Set<Vector2> intersectionPoints,
+    PositionComponent other,
+  ) {
+    if (other is Player) {
+      removeFromParent();
+    } else {
+      super.onCollisionStart(intersectionPoints, other);
     }
   }
 }
