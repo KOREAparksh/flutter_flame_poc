@@ -21,15 +21,29 @@ class LoadAchievement extends StatelessWidget {
   }
 }
 
+class PathDetail {
+  Path path;
+  List<double>? translate = [];
+  double? rotation;
+
+  PathDetail(this.path, {this.translate, this.rotation});
+}
+
 class World extends FlameGame with HasGameRef, DragCallbacks {
+  static const double padding = 80;
   static final dividerSize = Vector2(0, 20);
   static final itemrSize = Vector2(0, 100);
-  final List<TestComponent> list = <TestComponent>[];
-  late final cc;
-  late final CircleComponent centerComp;
+  final List<TargetComponent> targets = <TargetComponent>[];
+  final List<RectangleComponent> paths = [];
+
+  // late final LoadComponent loadComponent;
+
+  bool isHeadingRight = true;
 
   double cameraIndex = 0;
   bool isFirst = true;
+
+  static final List<Vector2> offsets = [];
 
   World();
 
@@ -38,35 +52,86 @@ class World extends FlameGame with HasGameRef, DragCallbacks {
     return Colors.blue;
   }
 
+  /// You must call this Method in OnLoad
+  void init() {
+    initTargetOffset();
+    initPathOffset();
+    // loadComponent = LoadComponent(path: path);
+  }
+
+  void initTargetOffset() {
+    offsets.add(Vector2(padding, 120));
+    offsets.add(Vector2(size.x / 2, 120));
+    offsets.add(Vector2(size.x - padding, 120));
+    offsets.add(Vector2(size.x - padding, 270));
+    offsets.add(Vector2(size.x / 2, 270));
+    offsets.add(Vector2(padding, 270));
+    offsets.add(Vector2(padding, 420));
+    offsets.add(Vector2(size.x / 2, 420));
+    offsets.add(Vector2(size.x - padding, 420));
+    offsets.add(Vector2(size.x - padding, 570));
+    offsets.add(Vector2(size.x / 2, 570));
+    offsets.add(Vector2(padding, 570));
+    offsets.add(Vector2(padding, 720));
+  }
+
+  void initPathOffset() {
+    paths.add(PathComponent(
+      color: Colors.red,
+      size: Vector2(20, offsets[0].y - 0),
+      position: Vector2(padding, 0),
+      anchor: Anchor.topCenter,
+      angle: 0,
+    ));
+    for (int i = 1; i < offsets.length; i++) {
+      late final Vector2 position;
+      late final Vector2 size;
+      late final Anchor anchor;
+      late final double angle;
+
+      if (i % 3 == 0) {
+        position = Vector2(offsets[i - 1].x, offsets[i - 1].y);
+        size = Vector2(20, offsets[i].y - offsets[i - 1].y);
+        anchor = Anchor.topCenter;
+        angle = 0;
+        isHeadingRight = !isHeadingRight;
+      } else {
+        position = Vector2(offsets[i].x, offsets[i].y);
+        size = Vector2(20, offsets[i].x - offsets[i - 1].x);
+        anchor = Anchor.topCenter;
+        angle = (isHeadingRight) ? pi / 2 : pi / -2;
+      }
+
+      paths.add(PathComponent(
+        color: Colors.red,
+        size: size,
+        position: position,
+        anchor: anchor,
+        angle: angle,
+      ));
+    }
+  }
+
   @override
   FutureOr<void> onLoad() {
-    for (int i = 0; i < 8; i++) {
-      list.add(
-        TestComponent(
-          size: Vector2(200, itemrSize.y),
-          position:
-              Vector2(size.x / 2, (itemrSize.y * i) + (dividerSize.y * i)),
-          text: "$i 입니다.",
-        ),
-      );
-      add(list[i]);
+    offsets.clear();
+    init();
+
+    for (var path in paths) {
+      add(path);
     }
 
-    centerComp = CircleComponent(
-      position: Vector2(size.x / 2, size.y / 2),
-      radius: 10,
-      anchor: Anchor.center,
-      priority: 10,
-    );
-    centerComp.paint.color = Colors.red;
-    add(centerComp);
+    for (int i = 0; i < offsets.length; i++) {
+      targets.add(
+        TargetComponent(
+          position: offsets[i],
+          text: "${i + 1} 입니다.",
+        ),
+      );
+      add(targets[i]);
+    }
 
-    centerComp.position.y = list.first.position.y - (itemrSize.y / 2);
-    gameRef.camera.followComponent(centerComp);
-
-    cc = CameraComponent.withFixedResolution(width: 400, height: 800);
-
-    add(cc);
+    // add(loadComponent);
   }
 
   @override
@@ -86,37 +151,109 @@ class World extends FlameGame with HasGameRef, DragCallbacks {
 
   void onDragUpdate(DragUpdateEvent event) {
     super.onDragUpdate(event);
-    centerComp.position.y = centerComp.position.y - event.delta.y;
   }
 }
 
-class TestComponent extends RectangleComponent {
+class TargetComponent extends CircleComponent {
   final String text;
-  TestComponent({
-    required size,
+
+  TargetComponent({
     required position,
     required this.text,
   }) : super(
-          size: size,
+          radius: 40,
           position: position,
           anchor: Anchor.center,
+          children: [
+            TextComponent(
+              text: text,
+              textRenderer: TextPaint(
+                style: const TextStyle(color: Colors.red),
+              ),
+              size: Vector2.all(0),
+              position: Vector2(20, 20),
+              // anchor: Anchor.center,
+            )
+          ],
+        );
+}
+
+class PathComponent extends RectangleComponent {
+  final Color color;
+
+  PathComponent({
+    required this.color,
+    required size,
+    required position,
+    required anchor,
+    required double angle,
+  }) : super(
+          size: size,
+          position: position,
+          anchor: anchor,
+          angle: angle,
         );
 
   @override
   FutureOr<void> onLoad() {
     super.onLoad();
-    final textComponent = TextComponent(
-      text: text,
-      textRenderer: TextPaint(
-        style: const TextStyle(color: Colors.red),
-      ),
-      size: Vector2.all(20),
-      position: Vector2(
-        size.x / 2,
-        size.y / 2,
-      ),
-      anchor: Anchor.center,
-    );
-    add(textComponent);
+    paint.color = color;
   }
 }
+
+// class LoadComponent extends CustomPainterComponent {
+//   final Path path;
+
+//   LoadComponent({required this.path})
+//       : super(
+//           painter: ArcLoadPainter(
+//             path,
+//             Colors.red,
+//           ),
+//         );
+// }
+
+// class ArcLoadPainter extends CustomPainter {
+//   Path path;
+//   final Color color;
+
+//   ArcLoadPainter(this.path, this.color);
+
+//   @override
+//   void paint(Canvas canvas, Size size) {
+//     final Paint paint = Paint()
+//       ..color = color
+//       ..strokeWidth = 18
+//       ..style = PaintingStyle.stroke
+//       ..strokeCap = StrokeCap.round;
+//     canvas.scale(0.5, 0.5);
+//     canvas.drawPath(path, paint);
+
+//     // for (int i = 0; i < path.length; i++) {
+//     //   if (path[i].translate != null) {
+//     //     canvas.translate(path[i].translate![0], path[i].translate![1]);
+//     //   }
+//     //   if (path[i].rotation != null) {
+//     //     canvas.rotate(path[i].rotation!);
+//     //   }
+//     //   if (blur > 0) {
+//     //     final MaskFilter blur = MaskFilter.blur(BlurStyle.normal, this.blur);
+//     //     paint.maskFilter = blur;
+//     //     canvas.drawPath(path[i].path, paint);
+//     //   }
+
+//     //   // paint.maskFilter = null;
+//     //   canvas.drawPath(path[i].path, paint);
+//     // }
+//   }
+
+//   @override
+//   bool shouldRepaint(covariant CustomPainter oldDelegate) {
+//     return true;
+//   }
+
+//   @override
+//   bool shouldRebuildSemantics(covariant CustomPainter oldDelegate) {
+//     return false;
+//   }
+// }
