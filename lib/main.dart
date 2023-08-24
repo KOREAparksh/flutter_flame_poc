@@ -93,10 +93,26 @@ class Home extends StatelessWidget {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const LoadAchievementOnce(maxLevel: 8),
+                      builder: (_) => const LoadAchievementOnce(
+                        startLevel: 0,
+                        maxLevel: 8,
+                      ),
                     ));
               },
               child: const Text("업적 애니메이션 한번에 start"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const LoadAchievementOnce(
+                        startLevel: 6,
+                        maxLevel: 10,
+                      ),
+                    ));
+              },
+              child: const Text("업적 애니메이션 6 ~ 10 start"),
             ),
           ],
         ),

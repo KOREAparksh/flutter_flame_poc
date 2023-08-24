@@ -9,9 +9,11 @@ import 'package:flutter/material.dart';
 class LoadAchievementOnce extends StatelessWidget {
   const LoadAchievementOnce({
     super.key,
+    required this.startLevel,
     required this.maxLevel,
   });
 
+  final int startLevel;
   final int maxLevel;
 
   @override
@@ -19,15 +21,22 @@ class LoadAchievementOnce extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text("업적...해적....산적...산적 맛있지...")),
       body: GameWidget(
-        game: World(maxLevel: maxLevel),
+        game: World(
+          startLevel: startLevel,
+          maxLevel: maxLevel,
+        ),
       ),
     );
   }
 }
 
 class World extends FlameGame with HasGameRef, DragCallbacks {
-  World({required this.maxLevel});
+  World({
+    required this.startLevel,
+    required this.maxLevel,
+  });
 
+  final int startLevel;
   final int maxLevel;
 
   static const double speed = 0.03;
@@ -37,10 +46,8 @@ class World extends FlameGame with HasGameRef, DragCallbacks {
   final List<TargetComponent> targets = <TargetComponent>[];
   final List<PathComponent> paths = [];
 
-  // late final LoadComponent loadComponent;
-
   bool isHeadingRight = true;
-  double sum = 0;
+  late double sum = startLevel.toDouble();
 
   double cameraIndex = 0;
   bool isFirst = true;
@@ -78,7 +85,7 @@ class World extends FlameGame with HasGameRef, DragCallbacks {
   void initPathOffset() {
     paths.add(PathComponent(
       index: 0,
-      sum: -1,
+      sum: sum,
       compColor: Colors.grey,
       compSize: Vector2(20, offsets[0].y - 0),
       compPosition: Vector2(padding, 0),
@@ -106,7 +113,7 @@ class World extends FlameGame with HasGameRef, DragCallbacks {
 
       paths.add(PathComponent(
         index: i,
-        sum: -1,
+        sum: sum,
         compColor: Colors.grey,
         compSize: size,
         compPosition: position,
@@ -222,6 +229,8 @@ class PathComponent extends RectangleComponent {
   @override
   FutureOr<void> onLoad() {
     super.onLoad();
+    int sumIndex = sum.toInt();
+
     grey = RectangleComponent(
       size: compSize,
       position: compPosition,
@@ -229,7 +238,7 @@ class PathComponent extends RectangleComponent {
       angle: compAngle,
     );
     red = RectangleComponent(
-      size: Vector2(compSize.x, 1),
+      size: Vector2(compSize.x, (index <= sumIndex) ? compSize.y : 0),
       position: compPosition,
       anchor: compAnchor,
       angle: compAngle,
@@ -245,8 +254,11 @@ class PathComponent extends RectangleComponent {
     super.update(dt);
     int sumIndex = sum.toInt();
     if (index <= sumIndex) {
-      double ySize = compSize.y * (sum - sumIndex);
-      red.size = Vector2(compSize.x, ySize);
+      double newY = compSize.y * (sum - sumIndex);
+      if (index < sumIndex) {
+        newY = compSize.y;
+      }
+      red.size = Vector2(compSize.x, newY);
     }
   }
 }
