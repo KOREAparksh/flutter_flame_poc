@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
@@ -22,6 +23,9 @@ class ArcLoadTest extends StatelessWidget {
 class World extends FlameGame with HasGameRef {
   World();
 
+  double dt = 0;
+  late final ArcLoad load;
+
   @override
   Color backgroundColor() {
     return Colors.blue;
@@ -29,18 +33,36 @@ class World extends FlameGame with HasGameRef {
 
   @override
   FutureOr<void> onLoad() {
-    add(ArcLoad(maxWidth: size.x));
+    load = ArcLoad(maxWidth: size.x, dt: dt);
+    add(load);
+  }
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+    this.dt += dt;
+    load.updateDt(this.dt);
   }
 }
 
 class ArcLoadPainter extends CustomPainter {
+  double dt;
+
   final double maxWidth;
   final double radius = 50;
 
-  ArcLoadPainter({required this.maxWidth});
+  ArcLoadPainter({
+    required this.maxWidth,
+    required this.dt,
+  });
+
+  void updateDt(double dt) {
+    this.dt = dt;
+  }
 
   @override
   void paint(Canvas canvas, Size size) {
+    print("dt: $dt");
     final Paint paint = Paint()
       ..color = Colors.red
       ..strokeWidth = 30
@@ -49,21 +71,42 @@ class ArcLoadPainter extends CustomPainter {
   }
 
   Path getPath(double x) {
+    // Path path = Path()
+    //   ..moveTo(50, 0)
+    //   ..lineTo(50, 200 - radius)
+    //   ..moveTo(50 + radius, 200)
+    //   ..arcToPoint(Offset(50, 200 - radius), radius: Radius.circular(radius))
+    //   ..moveTo(50 + radius, 200)
+    //   ..lineTo(maxWidth - 50 - radius, 200)
+    //   ..arcToPoint(Offset(maxWidth - 50, 200 + radius),
+    //       radius: Radius.circular(radius))
+    //   ..lineTo(maxWidth - 50, 400 - radius)
+    //   ..arcToPoint(Offset(maxWidth - 50 - radius, 400),
+    //       radius: Radius.circular(radius))
+    //   ..lineTo(50 + radius, 400)
+    //   ..moveTo(50, 400 + radius)
+    //   ..arcToPoint(Offset(50 + radius, 400), radius: Radius.circular(radius))
+    //   ..moveTo(50, 400 + radius)
+    //   ..lineTo(50, 500);
+
     Path path = Path()
       ..moveTo(50, 0)
       ..lineTo(50, 200 - radius)
-      ..moveTo(50 + radius, 200)
-      ..arcToPoint(Offset(50, 200 - radius), radius: Radius.circular(radius))
+      ..cubicTo(50, 200 - radius, 50, 200, 50 + radius, 200)
       ..moveTo(50 + radius, 200)
       ..lineTo(maxWidth - 50 - radius, 200)
-      ..arcToPoint(Offset(maxWidth - 50, 200 + radius),
-          radius: Radius.circular(radius))
-      ..lineTo(maxWidth - 50, 400 - radius)
-      ..arcToPoint(Offset(maxWidth - 50 - radius, 400),
-          radius: Radius.circular(radius))
-      ..lineTo(50, 400);
+      ..cubicTo(maxWidth - 50 - radius, 200, maxWidth - 50, 200, maxWidth - 50,
+          200 + radius)
+      ..lineTo(maxWidth - 50, 400 - radius);
 
     return path;
+  }
+
+  double _getCubicPoint(double t, double p0, double p1, double p2, double p3) {
+    return (pow(1 - t, 3).toDouble()) * p0 +
+        3 * pow(1 - t, 2) * t * p1 +
+        3 * (1 - t) * pow(t, 2) * p2 +
+        pow(t, 3) * p3;
   }
 
   @override
@@ -73,6 +116,21 @@ class ArcLoadPainter extends CustomPainter {
 }
 
 class ArcLoad extends CustomPainterComponent {
-  ArcLoad({required maxWidth})
-      : super(painter: ArcLoadPainter(maxWidth: maxWidth));
+  double dt;
+  final double maxWidth;
+  ArcLoad({
+    required this.maxWidth,
+    required this.dt,
+  }) : super(
+            painter: ArcLoadPainter(
+          maxWidth: maxWidth,
+          dt: dt,
+        ));
+
+  void updateDt(double dt) {
+    painter = ArcLoadPainter(
+      maxWidth: maxWidth,
+      dt: dt,
+    );
+  }
 }
