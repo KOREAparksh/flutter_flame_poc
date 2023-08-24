@@ -24,7 +24,10 @@ class RacingGame extends FlameGame with TapCallbacks, HasCollisionDetection {
 
   @override
   FutureOr<void> onLoad() async {
-    player = Player(position: Vector2(size.x * 0.25, size.y - 20));
+    player = Player(
+      position: Vector2(size.x * 0.25, size.y - 20),
+      color: Colors.blue,
+    );
     add(player);
   }
 
@@ -38,6 +41,7 @@ class RacingGame extends FlameGame with TapCallbacks, HasCollisionDetection {
       } else {
         player.position = Vector2(size.x * 0.25, size.y - 20);
       }
+      player.color = Colors.red;
     }
   }
 
@@ -55,9 +59,10 @@ class RacingGame extends FlameGame with TapCallbacks, HasCollisionDetection {
 class Player extends RectangleComponent with CollisionCallbacks {
   static const playerSize = 96.0;
   int totalCount = 0;
+  Color color;
   late TextComponent textComponent;
 
-  Player({required position})
+  Player({required position, required this.color})
       : super(
           position: position,
           size: Vector2.all(playerSize),
@@ -67,7 +72,7 @@ class Player extends RectangleComponent with CollisionCallbacks {
   @override
   Future<void> onLoad() async {
     super.onLoad();
-    paint.color = Colors.blue;
+    paint.color = color;
     add(RectangleHitbox());
 
     textComponent = TextComponent(

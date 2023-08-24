@@ -3,6 +3,7 @@ import 'package:flutter_flame_poc/arc_load_paint.dart';
 import 'package:flutter_flame_poc/falling_poop_game.dart';
 import 'package:flutter_flame_poc/flutter_achievement.dart';
 import 'package:flutter_flame_poc/load_achievement.dart';
+import 'package:flutter_flame_poc/load_achievement_once.dart';
 import 'package:flutter_flame_poc/test.dart';
 
 void main() {
@@ -62,10 +63,10 @@ class Home extends StatelessWidget {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const LoadAchievement(),
+                      builder: (_) => const FlutterAchievement(),
                     ));
               },
-              child: const Text("업적 start"),
+              child: const Text("플러터로 만든 업적 start"),
             ),
             ElevatedButton(
               onPressed: () {
@@ -82,10 +83,20 @@ class Home extends StatelessWidget {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const FlutterAchievement(),
+                      builder: (_) => const LoadAchievement(),
                     ));
               },
-              child: const Text("플러터로 만든 업적 start"),
+              child: const Text("업적 start"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const LoadAchievementOnce(maxLevel: 8),
+                    ));
+              },
+              child: const Text("업적 애니메이션 한번에 start"),
             ),
           ],
         ),

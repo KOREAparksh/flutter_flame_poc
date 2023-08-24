@@ -6,45 +6,46 @@ import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 
-class LoadAchievement extends StatelessWidget {
-  const LoadAchievement({super.key});
+class LoadAchievementOnce extends StatelessWidget {
+  const LoadAchievementOnce({
+    super.key,
+    required this.maxLevel,
+  });
+
+  final int maxLevel;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("업적...해적....산적...산적 맛있지...")),
       body: GameWidget(
-        game: World(),
+        game: World(maxLevel: maxLevel),
       ),
     );
   }
 }
 
-class PathDetail {
-  Path path;
-  List<double>? translate = [];
-  double? rotation;
-
-  PathDetail(this.path, {this.translate, this.rotation});
-}
-
 class World extends FlameGame with HasGameRef, DragCallbacks {
+  World({required this.maxLevel});
+
+  final int maxLevel;
+
+  static const double speed = 0.03;
   static const double padding = 80;
   static final dividerSize = Vector2(0, 20);
   static final itemrSize = Vector2(0, 100);
   final List<TargetComponent> targets = <TargetComponent>[];
-  final List<RectangleComponent> paths = [];
+  final List<PathComponent> paths = [];
 
   // late final LoadComponent loadComponent;
 
   bool isHeadingRight = true;
+  double sum = 0;
 
   double cameraIndex = 0;
   bool isFirst = true;
 
   static final List<Vector2> offsets = [];
-
-  World();
 
   @override
   Color backgroundColor() {
@@ -76,11 +77,13 @@ class World extends FlameGame with HasGameRef, DragCallbacks {
 
   void initPathOffset() {
     paths.add(PathComponent(
-      color: Colors.red,
-      size: Vector2(20, offsets[0].y - 0),
-      position: Vector2(padding, 0),
-      anchor: Anchor.topCenter,
-      angle: 0,
+      index: 0,
+      sum: -1,
+      compColor: Colors.grey,
+      compSize: Vector2(20, offsets[0].y - 0),
+      compPosition: Vector2(padding, 0),
+      compAnchor: Anchor.topCenter,
+      compAngle: 0,
     ));
     for (int i = 1; i < offsets.length; i++) {
       late final Vector2 position;
@@ -95,18 +98,20 @@ class World extends FlameGame with HasGameRef, DragCallbacks {
         angle = 0;
         isHeadingRight = !isHeadingRight;
       } else {
-        position = Vector2(offsets[i].x, offsets[i].y);
+        position = Vector2(offsets[i - 1].x, offsets[i - 1].y);
         size = Vector2(20, offsets[i].x - offsets[i - 1].x);
         anchor = Anchor.topCenter;
-        angle = (isHeadingRight) ? pi / 2 : pi / -2;
+        angle = (isHeadingRight) ? pi / -2 : pi / 2;
       }
 
       paths.add(PathComponent(
-        color: Colors.red,
-        size: size,
-        position: position,
-        anchor: anchor,
-        angle: angle,
+        index: i,
+        sum: -1,
+        compColor: Colors.grey,
+        compSize: size,
+        compPosition: position,
+        compAnchor: anchor,
+        compAngle: angle,
       ));
     }
   }
@@ -136,6 +141,20 @@ class World extends FlameGame with HasGameRef, DragCallbacks {
   @override
   void update(double dt) {
     super.update(dt);
+    if (maxLevel <= -1) {
+      return;
+    }
+    if (maxLevel < sum + speed) {
+      sum = maxLevel.toDouble();
+    } else {
+      sum += speed;
+    }
+
+    int index = sum.toInt();
+
+    paths[index].sum = sum;
+
+    print(sum);
 
     // if (isFirst && centerComp.position.y >= list.last.y) {
     //   if (isFirst == true) {
@@ -178,27 +197,61 @@ class TargetComponent extends CircleComponent {
 }
 
 class PathComponent extends RectangleComponent {
-  final Color color;
+  int index;
+  double sum;
+  Color compColor;
+  Vector2 compSize;
+  Vector2 compPosition;
+  Anchor compAnchor;
+  double compAngle;
+
+  double redY = 0;
+  late RectangleComponent grey;
+  late RectangleComponent red;
 
   PathComponent({
-    required this.color,
-    required size,
-    required position,
-    required anchor,
-    required double angle,
-  }) : super(
-          size: size,
-          position: position,
-          anchor: anchor,
-          angle: angle,
-        );
+    required this.index,
+    required this.sum,
+    required this.compColor,
+    required this.compSize,
+    required this.compPosition,
+    required this.compAnchor,
+    required this.compAngle,
+  });
 
   @override
   FutureOr<void> onLoad() {
     super.onLoad();
-    paint.color = color;
+    grey = RectangleComponent(
+      size: compSize,
+      position: compPosition,
+      anchor: compAnchor,
+      angle: compAngle,
+    );
+    red = RectangleComponent(
+      size: Vector2(compSize.x, 1),
+      position: compPosition,
+      anchor: compAnchor,
+      angle: compAngle,
+    );
+    grey.paint.color = compColor;
+    red.paint.color = Colors.red;
+    add(grey);
+    add(red);
+  }
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+    int sumIndex = sum.toInt();
+    if (index <= sumIndex) {
+      double ySize = compSize.y * (sum - sumIndex);
+      red.size = Vector2(compSize.x, ySize);
+    }
   }
 }
+
+
 
 // class LoadComponent extends CustomPainterComponent {
 //   final Path path;
