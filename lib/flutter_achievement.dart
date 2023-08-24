@@ -9,44 +9,11 @@ class FlutterAchievement extends StatelessWidget {
     final List<PathDetail> paths = [];
 
     final Path path = Path();
-    path.moveTo(100, 97);
-    path.cubicTo(100, 97, 142, 59, 169, 41);
-    path.cubicTo(197, 23, 249, 5, 204, 85);
+    path.moveTo(50, 50);
+    path.cubicTo(50, 50, 0, 300, 400, 300);
+    path.cubicTo(400, 300, 1100, 300, 600, 1000);
 
     paths.add(PathDetail(path));
-
-    final Path bezier2Path = Path();
-    bezier2Path.moveTo(0, 70);
-    bezier2Path.cubicTo(0, 70, 42, 31, 69, 14);
-    bezier2Path.cubicTo(97, -2, 149, -20, 104, 59);
-
-    paths.add(PathDetail(
-      bezier2Path,
-      translate: [29.45, 151],
-      rotation: -1.57,
-    ));
-
-    final Path bezier3Path = Path();
-    bezier3Path.moveTo(0, 70);
-    bezier3Path.cubicTo(0, 70, 44, 27, 69, 14);
-    bezier3Path.cubicTo(95, -0.5, 149, -22, 104, 59);
-
-    paths.add(PathDetail(
-      bezier3Path,
-      translate: [53, 200],
-      rotation: -3.1415,
-    ));
-
-    final Path bezier4Path = Path();
-    bezier4Path.moveTo(0, 70);
-    bezier4Path.cubicTo(0, 70, 44, 27, 69, 14);
-    bezier4Path.cubicTo(95, -0.5, 149, -22, 104, 59);
-
-    paths.add(PathDetail(
-      bezier4Path,
-      translate: [122, 77],
-      rotation: -4.712,
-    ));
 
     return paths;
   }
@@ -55,17 +22,15 @@ class FlutterAchievement extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("이건 플러터 코드")),
-      body: Center(
-        child: Stack(
-          children: [
-            CustomPaint(
-              foregroundPainter:
-                  ArcLoadPainter(_getLogoPath(), Colors.red, 1.0, false),
-              size: const Size(100, 100),
-            ),
-            AnimatedArcLoad(),
-          ],
-        ),
+      body: Stack(
+        children: [
+          CustomPaint(
+            foregroundPainter:
+                ArcLoadPainter(_getLogoPath(), Colors.red, 1.0, false),
+            size: const Size(100, 100),
+          ),
+          AnimatedArcLoad(),
+        ],
       ),
     );
   }
@@ -98,11 +63,9 @@ class ArcLoadPainter extends CustomPainter {
 
     for (int i = 0; i < path.length; i++) {
       if (path[i].translate != null) {
-        print("111111111111111");
         canvas.translate(path[i].translate![0], path[i].translate![1]);
       }
       if (path[i].rotation != null) {
-        print("2222222222222222");
         canvas.rotate(path[i].rotation!);
       }
       if (blur > 0) {
@@ -142,9 +105,6 @@ class _AnimatedArcLoadState extends State<AnimatedArcLoad>
   bool isPlaying = false;
   List<List<Point<double>>> pointList = <List<Point<double>>>[
     <Point<double>>[],
-    <Point<double>>[],
-    <Point<double>>[],
-    <Point<double>>[],
   ];
   bool isReversed = false;
 
@@ -155,80 +115,31 @@ class _AnimatedArcLoadState extends State<AnimatedArcLoad>
     double px;
     double py;
 
+    // path.moveTo(50, 50);
+    // path.cubicTo(50, 50, 0, 300, 400, 300);
+    // path.cubicTo(400, 300, 1100, 300, 600, 1000);
+
+    //
+    // path.cubicTo(100, 97, 142, 59, 169, 41);
+    // path.cubicTo(197, 23, 249, 5, 204, 85);
+
     final Path path = Path();
     if (t < b / 2) {
-      px = _getCubicPoint(t * 2, 100, 100, 142, 170);
-      py = _getCubicPoint(t * 2, 97, 97, 59, 41.22);
+      px = _getCubicPoint(t * 2, 50, 50, 0, 400);
+      py = _getCubicPoint(t * 2, 50, 50, 300, 300);
       pointList[0].add(Point<double>(px, py));
     } else {
-      px = _getCubicPoint(t * 2 - b, 170, 197, 250, 204);
-      py = _getCubicPoint(t * 2 - b, 41, 23, 5.5, 85);
+      px = _getCubicPoint(t * 2 - b, 400, 400, 1100, 600);
+      py = _getCubicPoint(t * 2 - b, 300, 300, 300, 1000);
       pointList[0].add(Point<double>(px, py));
     }
-    path.moveTo(100, 97);
+    path.moveTo(50, 50);
 
     for (final Point<double> p in pointList[0]) {
       path.lineTo(p.x, p.y);
     }
 
     paths.add(PathDetail(path));
-
-    final Path bezier2Path = Path();
-    if (t < b / 2) {
-      px = _getCubicPoint(t * 2, 0, 0, 42, 70);
-      py = _getCubicPoint(t * 2, 70, 70, 31, 14.77);
-      pointList[1].add(Point<double>(px, py));
-    } else {
-      px = _getCubicPoint(t * 2 - b, 70, 97, 150, 104);
-      py = _getCubicPoint(t * 2 - b, 14.7, -2.01, -20, 59.39);
-      pointList[1].add(Point<double>(px, py));
-    }
-    bezier2Path.moveTo(0, 70.5);
-
-    for (final Point<double> p in pointList[1]) {
-      bezier2Path.lineTo(p.x, p.y);
-    }
-
-    paths.add(
-        PathDetail(bezier2Path, translate: [29.45, 151], rotation: -1.5708));
-
-    final Path bezier3Path = Path();
-    if (t < b / 2) {
-      px = _getCubicPoint(t * 2, 0, 0, 42, 70);
-      py = _getCubicPoint(t * 2, 70, 70, 27.92, 13.7);
-      pointList[2].add(Point<double>(px, py));
-    } else {
-      px = _getCubicPoint(t * 2 - b, 70, 97, 150, 104);
-      py = _getCubicPoint(t * 2 - b, 13.7, -0.52, -22, 58.39);
-      pointList[2].add(Point<double>(px, py));
-    }
-    bezier3Path.moveTo(0, 69.5);
-
-    for (final Point<double> p in pointList[2]) {
-      bezier3Path.lineTo(p.x, p.y);
-    }
-
-    paths.add(PathDetail(bezier3Path, translate: [53, 200], rotation: -3.1415));
-
-    final Path bezier4Path = Path();
-    print("123");
-    if (t < b / 2) {
-      px = _getCubicPoint(t * 2, 0, 0, 43, 70);
-      py = _getCubicPoint(t * 2, 70, 70, 27.92, 13.7);
-      pointList[3].add(Point<double>(px, py));
-    } else {
-      px = _getCubicPoint(t * 2 - b, 70, 97, 150, 104);
-      py = _getCubicPoint(t * 2 - b, 13.7, -0.52, -22, 58.39);
-      pointList[3].add(Point<double>(px, py));
-    }
-    bezier4Path.moveTo(0, 69.5);
-
-    for (final Point<double> p in pointList[3]) {
-      bezier4Path.lineTo(p.x, p.y);
-    }
-
-    paths.add(
-        PathDetail(bezier4Path, translate: [122.4, 77], rotation: -4.7123));
 
     return paths;
   }
@@ -243,38 +154,12 @@ class _AnimatedArcLoadState extends State<AnimatedArcLoad>
 
     //1
     final Path path = Path();
-    path.moveTo(100, 97);
+    path.moveTo(50, 50);
     for (Point<double> point in points) {
       path.lineTo(point.x, point.y);
     }
 
-    //2
-    final Path bezier2Path = Path();
-    bezier2Path.moveTo(0, 70.55);
-    for (Point<double> point in pointList[1]) {
-      bezier2Path.lineTo(point.x, point.y);
-    }
-
-    //3
-    final Path bezier3Path = Path();
-    bezier3Path.moveTo(0, 69.48);
-    for (Point<double> point in pointList[2]) {
-      bezier3Path.lineTo(point.x, point.y);
-    }
-
-    //4
-    final Path bezier4Path = Path();
-    bezier4Path.moveTo(0, 69.48);
-    for (Point<double> point in pointList[3]) {
-      bezier4Path.lineTo(point.x, point.y);
-    }
-
-    return <PathDetail>[
-      PathDetail(path),
-      PathDetail(bezier2Path, translate: [29.45, 151], rotation: -1.5708),
-      PathDetail(bezier3Path, translate: [53, 200], rotation: -3.14159),
-      PathDetail(bezier4Path, translate: [122.48, 77], rotation: -4.71239),
-    ];
+    return <PathDetail>[PathDetail(path)];
   }
 
   List<PathDetail> _getPath() {
@@ -324,7 +209,7 @@ class _AnimatedArcLoadState extends State<AnimatedArcLoad>
       })
       ..addStatusListener((status) {
         if (status == AnimationStatus.completed) {
-          reverseAnimation();
+          // reverseAnimation();
         } else if (status == AnimationStatus.dismissed) {
           playAnimation();
         }
