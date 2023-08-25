@@ -96,7 +96,7 @@ class Home extends StatelessWidget {
                     MaterialPageRoute(
                       builder: (_) => const LoadAchievementOnce(
                         startLevel: 0,
-                        maxLevel: 23,
+                        maxLevel: 8,
                       ),
                     ));
               },

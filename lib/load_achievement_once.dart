@@ -26,6 +26,22 @@ class LoadAchievementOnce extends StatelessWidget {
         game: LoadMap(
           startLevel: startLevel,
           maxLevel: maxLevel,
+          onArrived: () async {
+            await showDialog(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    title: Text("마 좀 치나"),
+                    content: Text("니가 벌써 여 $maxLevel 까지 다 모았나!"),
+                    actions: [
+                      ElevatedButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: Text("확인"),
+                      ),
+                    ],
+                  );
+                });
+          },
         ),
       ),
     );
@@ -36,7 +52,10 @@ class LoadMap extends FlameGame with HasGameRef, DragCallbacks {
   LoadMap({
     required this.startLevel,
     required this.maxLevel,
+    required this.onArrived,
   });
+
+  final VoidCallback onArrived;
 
   final int startLevel;
   final int maxLevel;
@@ -57,6 +76,7 @@ class LoadMap extends FlameGame with HasGameRef, DragCallbacks {
   late double sum = startLevel.toDouble();
 
   bool isFirstAnimationEnd = false;
+  bool isFirstCallFunction = true;
 
   static final List<Vector2> offsets = [];
 
@@ -172,12 +192,6 @@ class LoadMap extends FlameGame with HasGameRef, DragCallbacks {
       priority: 10,
     );
     dagu.position.clamp(Vector2(0, 0), Vector2(size.x, size.y));
-    dagu.add(
-      MoveAlongPathEffect(
-        Path()..quadraticBezierTo(0, 0, 0, -50),
-        EffectController(duration: 0.5),
-      ),
-    );
     world.add(dagu);
 
     cameraComponent.follow(dagu, verticalOnly: true);
@@ -186,7 +200,7 @@ class LoadMap extends FlameGame with HasGameRef, DragCallbacks {
   }
 
   @override
-  void update(double dt) {
+  void update(double dt) async {
     super.update(dt);
     if (maxLevel <= -1) {
       return;
@@ -195,6 +209,10 @@ class LoadMap extends FlameGame with HasGameRef, DragCallbacks {
       isFirstAnimationEnd = true;
       cameraComponent.removed;
       sum = maxLevel.toDouble();
+      if (isFirstCallFunction == true) {
+        isFirstCallFunction = false;
+        onArrived.call();
+      }
       return;
     } else {
       sum += speed;
