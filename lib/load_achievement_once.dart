@@ -2,7 +2,9 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flame/components.dart';
+import 'package:flame/effects.dart';
 import 'package:flame/events.dart';
+import 'package:flame/experimental.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 
@@ -21,7 +23,7 @@ class LoadAchievementOnce extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text("업적...해적....산적...산적 맛있지...")),
       body: GameWidget(
-        game: World(
+        game: LoadMap(
           startLevel: startLevel,
           maxLevel: maxLevel,
         ),
@@ -30,14 +32,15 @@ class LoadAchievementOnce extends StatelessWidget {
   }
 }
 
-class World extends FlameGame with HasGameRef, DragCallbacks {
-  World({
+class LoadMap extends FlameGame with HasGameRef, DragCallbacks {
+  LoadMap({
     required this.startLevel,
     required this.maxLevel,
   });
 
   final int startLevel;
   final int maxLevel;
+  static Vector2 trackSize = Vector2.all(500);
 
   static const double speed = 0.03;
   static const double padding = 80;
@@ -46,11 +49,14 @@ class World extends FlameGame with HasGameRef, DragCallbacks {
   final List<TargetComponent> targets = <TargetComponent>[];
   final List<PathComponent> paths = [];
 
+  late final SpriteComponent dagu;
+  final World world = World();
+  late final CameraComponent cameraComponent;
+
   bool isHeadingRight = true;
   late double sum = startLevel.toDouble();
 
-  double cameraIndex = 0;
-  bool isFirst = true;
+  bool isFirstAnimationEnd = false;
 
   static final List<Vector2> offsets = [];
 
@@ -67,6 +73,7 @@ class World extends FlameGame with HasGameRef, DragCallbacks {
   }
 
   void initTargetOffset() {
+    offsets.clear();
     offsets.add(Vector2(padding, 120));
     offsets.add(Vector2(size.x / 2, 120));
     offsets.add(Vector2(size.x - padding, 120));
@@ -80,13 +87,23 @@ class World extends FlameGame with HasGameRef, DragCallbacks {
     offsets.add(Vector2(size.x / 2, 570));
     offsets.add(Vector2(padding, 570));
     offsets.add(Vector2(padding, 720));
+    offsets.add(Vector2(size.x / 2, 720));
+    offsets.add(Vector2(size.x - padding, 720));
+    offsets.add(Vector2(size.x - padding, 870));
+    offsets.add(Vector2(size.x / 2, 870));
+    offsets.add(Vector2(padding, 870));
+    offsets.add(Vector2(padding, 990));
+    offsets.add(Vector2(size.x / 2, 990));
+    offsets.add(Vector2(size.x - padding, 990));
+    offsets.add(Vector2(size.x - padding, 1110));
+    offsets.add(Vector2(size.x / 2, 1110));
+    offsets.add(Vector2(padding, 1110));
   }
 
   void initPathOffset() {
     paths.add(PathComponent(
       index: 0,
       sum: sum,
-      compColor: Colors.grey,
       compSize: Vector2(20, offsets[0].y - 0),
       compPosition: Vector2(padding, 0),
       compAnchor: Anchor.topCenter,
@@ -114,7 +131,6 @@ class World extends FlameGame with HasGameRef, DragCallbacks {
       paths.add(PathComponent(
         index: i,
         sum: sum,
-        compColor: Colors.grey,
         compSize: size,
         compPosition: position,
         compAnchor: anchor,
@@ -124,25 +140,49 @@ class World extends FlameGame with HasGameRef, DragCallbacks {
   }
 
   @override
-  FutureOr<void> onLoad() {
-    offsets.clear();
+  FutureOr<void> onLoad() async {
     init();
 
+    cameraComponent = CameraComponent(world: world)
+      ..viewfinder.position = Vector2(size.x / 2, size.y / 2)
+      ..viewfinder.anchor = Anchor.center;
+    addAll([world, cameraComponent]);
+
     for (var path in paths) {
-      add(path);
+      world.add(path);
     }
 
     for (int i = 0; i < offsets.length; i++) {
       targets.add(
         TargetComponent(
           position: offsets[i],
+          radius: 25,
           text: "${i + 1} 입니다.",
         ),
       );
-      add(targets[i]);
+      world.add(targets[i]);
     }
 
-    // add(loadComponent);
+    final daguImage = await Sprite.load("dagu.png");
+    dagu = SpriteComponent(
+      sprite: daguImage,
+      size: Vector2.all(70),
+      position: Vector2(padding, 70 / 2),
+      anchor: Anchor.bottomCenter,
+      priority: 10,
+    );
+    dagu.position.clamp(Vector2(0, 0), Vector2(size.x, size.y));
+    dagu.add(
+      MoveAlongPathEffect(
+        Path()..quadraticBezierTo(0, 0, 0, -50),
+        EffectController(duration: 0.5),
+      ),
+    );
+    world.add(dagu);
+
+    cameraComponent.follow(dagu, verticalOnly: true);
+    cameraComponent.setBounds(Rectangle.fromLTWH(size.x / 2, size.y / 2,
+        size.x / 2, targets.last.position.y - size.y + 100));
   }
 
   @override
@@ -152,16 +192,47 @@ class World extends FlameGame with HasGameRef, DragCallbacks {
       return;
     }
     if (maxLevel < sum + speed) {
+      isFirstAnimationEnd = true;
+      cameraComponent.removed;
       sum = maxLevel.toDouble();
+      return;
     } else {
       sum += speed;
     }
 
     int index = sum.toInt();
 
-    paths[index].sum = sum;
+    if (index < paths.length) {
+      paths[index].sum = sum;
+    }
+    // print(paths[index].position);
 
-    print(sum);
+    final rotate = index % 6;
+
+    if (rotate == 0 || rotate == 3) {
+      final double newY;
+      newY = paths[index].y +
+          (paths[index + 1].y - paths[index].y) * (sum - index);
+      dagu.position.y = newY;
+    } else if (rotate == 1 || rotate == 2) {
+      final double newX;
+      newX = paths[index].x +
+          (paths[index + 1].x - paths[index].x) * (sum - index);
+      dagu.position.x = newX;
+    } else if (rotate == 4 || rotate == 5) {
+      final double newX;
+      newX = paths[index].x +
+          (paths[index + 1].x - paths[index].x) * (sum - index);
+      dagu.position.x = newX;
+    }
+
+    // dagu.position = paths[index].position;
+    // dagu.position.y += 20 * speed;
+    // cameraComponent.moveTo(dagu.)
+
+    ///////////////////////////////////////////////
+
+    // print(sum);
 
     // if (isFirst && centerComp.position.y >= list.last.y) {
     //   if (isFirst == true) {
@@ -174,8 +245,18 @@ class World extends FlameGame with HasGameRef, DragCallbacks {
     // }
   }
 
+  @override
   void onDragUpdate(DragUpdateEvent event) {
     super.onDragUpdate(event);
+    if (isFirstAnimationEnd == false) {
+      return;
+    }
+    // if (cameraComponent.viewport.position.y + event.delta.y > 0 ||
+    //     (cameraComponent.viewport.position.y + event.delta.y).abs() >
+    //         targets.last.position.y) {
+    //   return;
+    // }
+    // cameraComponent.viewport.position.y += event.delta.y;
   }
 }
 
@@ -184,9 +265,10 @@ class TargetComponent extends CircleComponent {
 
   TargetComponent({
     required position,
+    required double radius,
     required this.text,
   }) : super(
-          radius: 40,
+          radius: 20,
           position: position,
           anchor: Anchor.center,
           children: [
@@ -206,46 +288,49 @@ class TargetComponent extends CircleComponent {
 class PathComponent extends RectangleComponent {
   int index;
   double sum;
-  Color compColor;
+  final Color defaultColor = Colors.grey;
+  final Color passedRoadColor = Colors.red;
   Vector2 compSize;
   Vector2 compPosition;
   Anchor compAnchor;
   double compAngle;
 
   double redY = 0;
-  late RectangleComponent grey;
   late RectangleComponent red;
 
   PathComponent({
     required this.index,
     required this.sum,
-    required this.compColor,
     required this.compSize,
     required this.compPosition,
     required this.compAnchor,
     required this.compAngle,
-  });
+  }) : super(
+          size: compSize,
+          position: compPosition,
+          anchor: compAnchor,
+          angle: compAngle,
+        );
 
   @override
   FutureOr<void> onLoad() {
     super.onLoad();
     int sumIndex = sum.toInt();
 
-    grey = RectangleComponent(
-      size: compSize,
-      position: compPosition,
-      anchor: compAnchor,
-      angle: compAngle,
-    );
+    paint.color = defaultColor;
+
+    priority = 0;
+
     red = RectangleComponent(
-      size: Vector2(compSize.x, (index <= sumIndex) ? compSize.y : 0),
-      position: compPosition,
-      anchor: compAnchor,
-      angle: compAngle,
+      size: Vector2(size.x, 0),
+      position: Vector2(0, 0),
+      anchor: Anchor.topLeft,
+      angle: 0,
+      priority: 100,
     );
-    grey.paint.color = compColor;
-    red.paint.color = Colors.red;
-    add(grey);
+    // grey.paint.color = compColor;
+    red.paint.color = passedRoadColor;
+    // add(grey);
     add(red);
   }
 
@@ -254,11 +339,11 @@ class PathComponent extends RectangleComponent {
     super.update(dt);
     int sumIndex = sum.toInt();
     if (index <= sumIndex) {
-      double newY = compSize.y * (sum - sumIndex);
+      double newY = size.y * (sum - sumIndex);
       if (index < sumIndex) {
-        newY = compSize.y;
+        newY = size.y;
       }
-      red.size = Vector2(compSize.x, newY);
+      red.size = Vector2(size.x, newY);
     }
   }
 }
