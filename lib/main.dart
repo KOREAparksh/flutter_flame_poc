@@ -5,6 +5,7 @@ import 'package:flutter_flame_poc/flutter_achievement.dart';
 import 'package:flutter_flame_poc/load_achievement.dart';
 import 'package:flutter_flame_poc/load_achievement_once.dart';
 import 'package:flutter_flame_poc/test.dart';
+import 'package:flutter_flame_poc/waves.dart';
 
 void main() {
   runApp(const MyApp());
@@ -113,6 +114,16 @@ class Home extends StatelessWidget {
                     ));
               },
               child: const Text("업적 애니메이션 6 ~ 10 start"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const WavesTest(),
+                    ));
+              },
+              child: const Text("물결테스트"),
             ),
           ],
         ),

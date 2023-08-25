@@ -315,7 +315,6 @@ class PathComponent extends RectangleComponent {
   @override
   FutureOr<void> onLoad() {
     super.onLoad();
-    int sumIndex = sum.toInt();
 
     paint.color = defaultColor;
 
