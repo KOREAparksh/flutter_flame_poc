@@ -42,6 +42,23 @@ class LoadAchievementOnce extends StatelessWidget {
                   );
                 });
           },
+          onTap: (i) async {
+            print("123123");
+            await showDialog(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    title: Text("마 좀 치나"),
+                    content: Text("니가 벌써 여 ${i + 1} 까지 다 모았나!"),
+                    actions: [
+                      ElevatedButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: Text("확인"),
+                      ),
+                    ],
+                  );
+                });
+          },
         ),
       ),
     );
@@ -53,9 +70,11 @@ class LoadMap extends FlameGame with HasGameRef, DragCallbacks {
     required this.startLevel,
     required this.maxLevel,
     required this.onArrived,
+    required this.onTap,
   });
 
   final VoidCallback onArrived;
+  final Future<void> Function(int index) onTap;
 
   final int startLevel;
   final int maxLevel;
@@ -175,9 +194,11 @@ class LoadMap extends FlameGame with HasGameRef, DragCallbacks {
     for (int i = 0; i < offsets.length; i++) {
       targets.add(
         TargetComponent(
+          index: i,
           position: offsets[i],
           radius: 25,
           text: "${i + 1} 입니다.",
+          onTap: onTap,
         ),
       );
       world.add(targets[i]);
@@ -278,13 +299,17 @@ class LoadMap extends FlameGame with HasGameRef, DragCallbacks {
   }
 }
 
-class TargetComponent extends CircleComponent {
+class TargetComponent extends CircleComponent with TapCallbacks {
   final String text;
+  final int index;
+  final Future<void> Function(int index) onTap;
 
   TargetComponent({
     required position,
     required double radius,
     required this.text,
+    required this.index,
+    required this.onTap,
   }) : super(
           radius: 20,
           position: position,
@@ -301,6 +326,15 @@ class TargetComponent extends CircleComponent {
             )
           ],
         );
+
+  @override
+  void onTapDown(TapDownEvent event) async {
+    super.onTapDown(event);
+    if (!event.handled) {
+      print("2222");
+      onTap(index);
+    }
+  }
 }
 
 class PathComponent extends RectangleComponent {
@@ -364,62 +398,3 @@ class PathComponent extends RectangleComponent {
     }
   }
 }
-
-
-
-// class LoadComponent extends CustomPainterComponent {
-//   final Path path;
-
-//   LoadComponent({required this.path})
-//       : super(
-//           painter: ArcLoadPainter(
-//             path,
-//             Colors.red,
-//           ),
-//         );
-// }
-
-// class ArcLoadPainter extends CustomPainter {
-//   Path path;
-//   final Color color;
-
-//   ArcLoadPainter(this.path, this.color);
-
-//   @override
-//   void paint(Canvas canvas, Size size) {
-//     final Paint paint = Paint()
-//       ..color = color
-//       ..strokeWidth = 18
-//       ..style = PaintingStyle.stroke
-//       ..strokeCap = StrokeCap.round;
-//     canvas.scale(0.5, 0.5);
-//     canvas.drawPath(path, paint);
-
-//     // for (int i = 0; i < path.length; i++) {
-//     //   if (path[i].translate != null) {
-//     //     canvas.translate(path[i].translate![0], path[i].translate![1]);
-//     //   }
-//     //   if (path[i].rotation != null) {
-//     //     canvas.rotate(path[i].rotation!);
-//     //   }
-//     //   if (blur > 0) {
-//     //     final MaskFilter blur = MaskFilter.blur(BlurStyle.normal, this.blur);
-//     //     paint.maskFilter = blur;
-//     //     canvas.drawPath(path[i].path, paint);
-//     //   }
-
-//     //   // paint.maskFilter = null;
-//     //   canvas.drawPath(path[i].path, paint);
-//     // }
-//   }
-
-//   @override
-//   bool shouldRepaint(covariant CustomPainter oldDelegate) {
-//     return true;
-//   }
-
-//   @override
-//   bool shouldRebuildSemantics(covariant CustomPainter oldDelegate) {
-//     return false;
-//   }
-// }
